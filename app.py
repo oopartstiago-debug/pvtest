@@ -344,11 +344,12 @@ st.pyplot(fig_s)
 st.divider()
 with st.expander("📋 Experimental data upload format"):
     st.markdown("Upload an Excel or CSV file with the following columns:")
-    st.code("  |  ".join(FEATURE_NAMES + ["target_YI"]))
+    col_str = " | ".join(FEATURE_NAMES + ["target_YI"])
+    st.code(col_str, language=None)
     st.markdown(
         "When uploaded, the model retrains by merging synthetic baseline data "
-        "with your records (experimental rows weighted 3×). "
-        "Recommended: ≥5 records for meaningful influence, ≥20 for full replacement."
+        "with your records (experimental rows weighted 3x). "
+        "Recommended: 5+ records for meaningful influence, 20+ for full replacement."
     )
 ```
 

@@ -1,0 +1,6 @@
+streamlit
+tabpfn-client
+pandas
+numpy
+matplotlib
+openpyxl

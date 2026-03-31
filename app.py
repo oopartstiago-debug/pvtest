@@ -378,36 +378,37 @@ st.divider()
 
 # ════════════════════════════════════════════════════════════════════════════
 # Section B — Optimal Formulation Recommendation
-# 현재 처방 기준 YI를 가장 낮추는 조합 자동 탐색
 # ════════════════════════════════════════════════════════════════════════════
 st.subheader("② Optimal Formulation Recommendation")
-st.caption("Grid search across all variable combinations to find the lowest predicted YI.")
+st.caption("Random search across formulation space to find the lowest predicted YI.")
 
 with st.spinner("Searching optimal formulation …"):
 
-    # 각 변수를 5포인트로 샘플링 → 전체 조합 배치 예측
-    N_OPT   = 5
-    grids   = [np.linspace(*SIM_RANGES[f], N_OPT) for f in FEATURE_NAMES]
-    mesh    = np.array(np.meshgrid(*grids)).reshape(len(FEATURE_NAMES), -1).T
-    X_opt   = pd.DataFrame(mesh, columns=FEATURE_NAMES)
-    y_opt   = model.predict(X_opt)
+    # 랜덤 샘플링 방식 (그리드 대신) — API 제한 회피
+    np.random.seed(0)
+    N_SEARCH = 500  # TabPFN API 제한 이내
+    search_rows = {
+        feat: np.random.uniform(*SIM_RANGES[feat], N_SEARCH)
+        for feat in FEATURE_NAMES
+    }
+    X_search = pd.DataFrame(search_rows)
+    y_search = model.predict(X_search)
 
-    best_idx  = int(np.argmin(y_opt))
-    best_row  = X_opt.iloc[best_idx]
-    best_yi   = float(y_opt[best_idx])
+    best_idx = int(np.argmin(y_search))
+    best_row = X_search.iloc[best_idx]
+    best_yi  = float(y_search[best_idx])
 
-    # 현재 처방과 비교 테이블
     opt_rows = []
     for feat in FEATURE_NAMES:
-        cur_val  = current[feat]
-        opt_val  = round(float(best_row[feat]), 3)
-        delta    = opt_val - cur_val
+        cur_val = current[feat]
+        opt_val = round(float(best_row[feat]), 3)
+        delta   = opt_val - cur_val
         opt_rows.append({
-            "Parameter":       FEATURE_META[feat][1],
-            "Current":         round(cur_val, 3),
-            "Recommended":     opt_val,
-            "Change":          f"{delta:+.3g}",
-            "Change?":         "→ adjust" if abs(delta) > FEATURE_META[feat][5] else "keep",
+            "Parameter":   FEATURE_META[feat][1],
+            "Current":     round(cur_val, 3),
+            "Recommended": opt_val,
+            "Change":      f"{delta:+.3g}",
+            "Change?":     "→ adjust" if abs(delta) > FEATURE_META[feat][5] else "keep",
         })
 
     opt_df = pd.DataFrame(opt_rows)
@@ -425,8 +426,8 @@ with col_opt1:
     )
 
 with col_opt2:
-    st.metric("Current YI",     f"{yi_pred:.2f}")
-    st.metric("Optimal YI",     f"{best_yi:.2f}",
+    st.metric("Current YI", f"{yi_pred:.2f}")
+    st.metric("Optimal YI", f"{best_yi:.2f}",
               delta=f"{best_yi - yi_pred:+.2f}", delta_color="inverse")
     if best_yi < YI_LIMIT:
         st.success(f"✅ Optimal formulation achieves YI {best_yi:.1f} — within limit.")

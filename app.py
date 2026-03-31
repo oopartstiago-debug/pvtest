@@ -87,25 +87,29 @@ def generate_synthetic_data(n: int = 300, seed: int = 42) -> tuple[pd.DataFrame,
 # ════════════════════════════════════════════════════════════════════════════
 @st.cache_resource(show_spinner="Training TabPFN model …")
 def load_model(real_data_hash: str = "none") -> TabPFNRegressor:
-    
-    # 토큰을 환경변수에서 직접 읽어 로그인 — 대화형 프롬프트 없이 자동 처리
+
+    # 토큰 파일을 직접 생성해서 대화형 로그인 완전 우회
     token = os.environ.get("TABPFN_ACCESS_TOKEN", "")
     if not token:
-        st.error("TABPFN_TOKEN not set.")
+        st.error("TABPFN_TOKEN not set in secrets.")
         st.stop()
-    
-    tabpfn_client.init(use_server=True, access_token=token)  # ← 토큰 직접 전달
-    
+
+    # TabPFN이 토큰을 읽는 경로에 직접 파일 생성
+    token_dir  = os.path.expanduser("~/.tabpfn")
+    token_path = os.path.join(token_dir, "token")
+    os.makedirs(token_dir, exist_ok=True)
+    with open(token_path, "w") as f:
+        f.write(token)
+
+    # 이제 init()은 파일에서 토큰을 읽어 자동 로그인
+    tabpfn_client.init(use_server=True)
+
     X_syn, y_syn = generate_synthetic_data()
 
-    # ── Experimental data slot ───────────────────────────────────────────
-    # When real_df is stored in session state, merge here (3× weight).
-    # This block is intentionally left ready — no real data yet.
     if "real_df" in st.session_state and st.session_state.real_df is not None:
         real_df = st.session_state.real_df
         real_X  = real_df[FEATURE_NAMES]
         real_y  = real_df["target_YI"].values
-        # Oversample real records to give them stronger influence
         X_train = pd.concat([X_syn] + [real_X] * 3, ignore_index=True)
         y_train = np.concatenate([y_syn] + [real_y] * 3)
     else:
@@ -114,7 +118,6 @@ def load_model(real_data_hash: str = "none") -> TabPFNRegressor:
     m = TabPFNRegressor()
     m.fit(X_train, y_train)
     return m
-
 
 # ════════════════════════════════════════════════════════════════════════════
 # Sidebar — sliders + data upload

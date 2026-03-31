@@ -3,4 +3,6 @@ tabpfn-client
 pandas
 numpy
 matplotlib
+matplotlib-inline
 openpyxl
+scikit-learn

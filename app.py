@@ -95,12 +95,18 @@ def load_model(real_data_hash: str = "none") -> TabPFNRegressor:
 
     # 방법 1: 토큰 파일 직접 생성
     try:
-        token_dir = os.path.expanduser("~/.tabpfn")
-        os.makedirs(token_dir, exist_ok=True)
-        with open(os.path.join(token_dir, "token"), "w") as f:
-            f.write(token)
-    except Exception as e:
-        st.warning(f"Token file write failed: {e}")
+# init() 호출 전에 토큰 파일 생성
+    token_dir  = os.path.expanduser("~/.tabpfn")
+    token_path = os.path.join(token_dir, "token")
+    os.makedirs(token_dir, exist_ok=True)
+    with open(token_path, "w") as f:
+        f.write(token)
+
+    # use_server 없이 호출 — 버전에 따라 인자가 다름
+    try:
+        tabpfn_client.init(use_server=True)
+    except TypeError:
+        tabpfn_client.init()  # 구버전 fallback
 
     # 방법 2: 환경변수로도 동시에 설정
     os.environ["TABPFN_TOKEN"] = token

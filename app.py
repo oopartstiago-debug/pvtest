@@ -87,12 +87,15 @@ def generate_synthetic_data(n: int = 300, seed: int = 42) -> tuple[pd.DataFrame,
 # ════════════════════════════════════════════════════════════════════════════
 @st.cache_resource(show_spinner="Training TabPFN model …")
 def load_model(real_data_hash: str = "none") -> TabPFNRegressor:
-    """
-    real_data_hash: pass a hash of the uploaded dataframe to bust the cache
-    when new experimental data is uploaded.
-    """
-    tabpfn_client.init(use_server=True)
-
+    
+    # 토큰을 환경변수에서 직접 읽어 로그인 — 대화형 프롬프트 없이 자동 처리
+    token = os.environ.get("TABPFN_ACCESS_TOKEN", "")
+    if not token:
+        st.error("TABPFN_TOKEN not set.")
+        st.stop()
+    
+    tabpfn_client.init(use_server=True, access_token=token)  # ← 토큰 직접 전달
+    
     X_syn, y_syn = generate_synthetic_data()
 
     # ── Experimental data slot ───────────────────────────────────────────

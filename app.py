@@ -253,17 +253,21 @@ st.title("PVC 필름 황변지수(YI) 예측 대시보드")
 st.caption("모델: TabPFN Regressor (Prior Labs API)  |  학습 데이터: 물리 기반 가상 데이터 300건")
 
 # 상단 핵심 지표 4개
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("예측 황변지수 (YI)", f"{yi_pred:.2f}",
-          help="현재 처방 조건에서 TabPFN이 예측한 황변지수입니다.")
-c2.metric("등급", grade_label,
-          help="YI 수준에 따른 품질 등급입니다.")
-c3.metric("허용 한계 (YI)", f"{YI_LIMIT:.0f}",
-          help="이 값 이하를 목표로 처방을 설계해야 합니다.")
-c4.metric("한계까지 여유", f"{YI_LIMIT - yi_pred:+.2f}",
-          help="양수면 한계 이내, 음수면 한계 초과 상태입니다.",
-          delta=f"{YI_LIMIT - yi_pred:+.2f}", delta_color="normal")
-st.divider()
+# 기존의 st.metric 부분을 아래 ui.metric_card 조합으로 교체
+st.subheader("📊 예측 핵심 지표")
+cols = st.columns(4)
+
+with cols[0]:
+    ui.metric_card(title="예측 황변지수 (YI)", content=f"{yi_pred:.2f}", description="TabPFN 예측 결과", key="m1")
+with cols[1]:
+    # 등급에 따른 뱃지 스타일 적용 (Shadcn UI의 특징)
+    ui.metric_card(title="품질 등급", content=grade_label.split(" ")[0], description=grade_label.split(" ")[1], key="m2")
+with cols[2]:
+    ui.metric_card(title="허용 한계", content=f"{YI_LIMIT}", description="최대 목표치", key="m3")
+with cols[3]:
+    diff = YI_LIMIT - yi_pred
+    status = "정상" if diff > 0 else "초과"
+    ui.metric_card(title="한계 대비 여유", content=f"{diff:+.2f}", description=status, key="m4")
 
 # ════════════════════════════════════════════════════════════════════════════
 # 배치 추론 (그래프용 데이터 일괄 계산)

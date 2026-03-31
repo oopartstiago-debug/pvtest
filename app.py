@@ -508,15 +508,3 @@ with st.expander("📋 Experimental data upload format"):
         "with your records (experimental rows weighted 3x). "
         "Recommended: 5+ records for meaningful influence, 20+ for full replacement."
     )
-```
-
-**`requirements.txt`도 아래로 교체하세요** (`scipy` 추가):
-```
-streamlit>=1.30.0
-tabpfn-client
-pandas>=1.5.0
-numpy>=1.23.0
-matplotlib>=3.6.0
-openpyxl>=3.0.0
-scikit-learn>=1.2.0
-scipy>=1.10.0

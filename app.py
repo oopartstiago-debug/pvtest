@@ -8,6 +8,8 @@ import os
 import warnings
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")          # ← 이 줄 추가 (서버 환경 필수)
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import streamlit as st

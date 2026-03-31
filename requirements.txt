@@ -1,5 +1,5 @@
 streamlit>=1.30.0
-tabpfn-client==0.0.16
+tabpfn-client
 pandas>=1.5.0
 numpy>=1.23.0
 matplotlib>=3.6.0

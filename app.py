@@ -10,13 +10,12 @@ st.title("Debug")
 
 token = st.secrets["TABPFN_TOKEN"]
 
-import tabpfn_client
-from tabpfn_client import config as tabpfn_config
+from tabpfn_client.service_wrapper import UserAuthenticationClient
+from tabpfn_client.constants import CACHE_DIR
 
-# set_access_token 소스코드 출력
-st.subheader("set_access_token source:")
-st.code(inspect.getsource(tabpfn_client.set_access_token))
+st.subheader("CACHE_DIR in constants:")
+st.write(str(CACHE_DIR))
 
-# config 전체 소스도 확인
-st.subheader("config.py source:")
-st.code(inspect.getsource(tabpfn_config))
+st.subheader("UserAuthenticationClient.set_token source:")
+st.code(inspect.getsource(UserAuthenticationClient.set_token))
+

@@ -1,5 +1,5 @@
 import os
-import sys
+import pathlib
 
 os.makedirs("/tmp/.tabpfn", exist_ok=True)
 
@@ -10,17 +10,29 @@ st.title("Debug")
 token = st.secrets["TABPFN_TOKEN"]
 st.success(f"Token OK: length={len(token)}")
 
-# tabpfn_client 내부 config 경로를 import 후 직접 패치
+# tabpfn_client config 경로를 /tmp로 강제 패치
 import tabpfn_client
 from tabpfn_client import config as tabpfn_config
 
-# config 모듈이 어떤 경로를 쓰는지 확인
-st.write("config module attributes:")
-st.write([x for x in dir(tabpfn_config) if not x.startswith("__")])
+tabpfn_config.CACHE_DIR = pathlib.Path("/tmp/.tabpfn")
+st.write(f"CACHE_DIR patched to: {tabpfn_config.CACHE_DIR}")
 
-# 경로 관련 속성 값 출력
-for attr in dir(tabpfn_config):
-    if not attr.startswith("__"):
-        val = getattr(tabpfn_config, attr)
-        if isinstance(val, (str, os.PathLike)):
-            st.write(f"{attr} = {val}")
+try:
+    tabpfn_client.set_access_token(token)
+    st.success("set_access_token() succeeded")
+except Exception as e:
+    st.error(f"set_access_token failed: {e}")
+    st.stop()
+
+try:
+    from tabpfn_client import TabPFNRegressor
+    import numpy as np
+    import pandas as pd
+
+    X = pd.DataFrame({"a": [1,2,3], "b": [4,5,6]})
+    y = np.array([1.0, 2.0, 3.0])
+    m = TabPFNRegressor()
+    m.fit(X, y)
+    st.success("TabPFNRegressor fit succeeded!")
+except Exception as e:
+    st.error(f"fit failed: {e}")

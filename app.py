@@ -351,11 +351,3 @@ with st.expander("📋 Experimental data upload format"):
         "with your records (experimental rows weighted 3x). "
         "Recommended: 5+ records for meaningful influence, 20+ for full replacement."
     )
-```
-
----
-
-**GitHub 배포 체크리스트:**
-```
-# .gitignore 에 반드시 추가
-.streamlit/secrets.toml

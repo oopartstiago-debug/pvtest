@@ -12,7 +12,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import streamlit as st
-
+import streamlit_shadcn_ui as ui  # 추가
+import plotly.graph_objects as go # 세련된 그래프를 위해 추가
 warnings.filterwarnings("ignore")
 
 # ── TabPFN 경로 패치 ──────────────────────────────────────────────────────

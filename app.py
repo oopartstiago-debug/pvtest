@@ -309,22 +309,23 @@ labels_short = [FEATURE_META[f][0] for f in FEATURE_NAMES]  # ← 이 줄 추가
 
 # ─ YI 게이지 바 ──────────────────────────────────────────────────────────
 with col_g:
-    st.markdown("**예측 YI 상태**")
-    fig = go.Figure(go.Indicator(
-        mode = "gauge+number",
-        value = yi_pred,
-        domain = {'x': [0, 1], 'y': [0, 1]},
-        gauge = {
-            'axis': {'range': [0, 70]},
-            'bar': {'color': grade_color},
-            'steps' : [
-                {'range': [0, YI_LIMIT], 'color': "#f0f2f5"},
-                {'range': [YI_LIMIT, 70], 'color': "#ffcccb"}],
-            'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': YI_LIMIT}
-        }
-    ))
-    fig.update_layout(height=250, margin=dict(l=20, r=20, t=30, b=20))
-    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("**예측 YI 게이지**")
+    st.caption("현재 처방의 YI 예측값과 허용 한계의 관계를 보여줍니다.")
+    fig_g, ax_g = plt.subplots(figsize=(4, 2.5))
+    fig_g.patch.set_facecolor("#f0f2f5")
+    ax_g.set_facecolor("#ffffff")
+    ax_g.barh([""], [yi_pred], color=grade_color, height=0.45, zorder=3)
+    ax_g.barh([""], [70 - yi_pred], left=[yi_pred], color="#dfe6e9", height=0.45, zorder=2)
+    ax_g.axvline(YI_LIMIT, color="#7f8c8d", linestyle="--", lw=1.5, label=f"Limit={YI_LIMIT:.0f}")
+    ax_g.set_xlim(0, 70)
+    ax_g.text(min(yi_pred + 1.5, 58), 0, f"{yi_pred:.1f}",
+              va="center", fontsize=16, fontweight="bold", color=grade_color)
+    ax_g.set_title("Predicted YI", fontsize=10, fontweight="bold")
+    ax_g.legend(fontsize=8, loc="upper right")
+    ax_g.set_yticks([])
+    ax_g.grid(axis="x", linestyle=":", alpha=0.4)
+    plt.tight_layout()
+    st.pyplot(fig_g)
 
 # ─ 처방 포지션 ───────────────────────────────────────────────────────────
 with col_p:

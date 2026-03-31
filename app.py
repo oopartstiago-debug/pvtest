@@ -88,20 +88,24 @@ def generate_synthetic_data(n: int = 300, seed: int = 42) -> tuple[pd.DataFrame,
 @st.cache_resource(show_spinner="Training TabPFN model …")
 def load_model(real_data_hash: str = "none") -> TabPFNRegressor:
 
-    # 토큰 파일을 직접 생성해서 대화형 로그인 완전 우회
     token = os.environ.get("TABPFN_ACCESS_TOKEN", "")
     if not token:
         st.error("TABPFN_TOKEN not set in secrets.")
         st.stop()
 
-    # TabPFN이 토큰을 읽는 경로에 직접 파일 생성
-    token_dir  = os.path.expanduser("~/.tabpfn")
-    token_path = os.path.join(token_dir, "token")
-    os.makedirs(token_dir, exist_ok=True)
-    with open(token_path, "w") as f:
-        f.write(token)
+    # 방법 1: 토큰 파일 직접 생성
+    try:
+        token_dir = os.path.expanduser("~/.tabpfn")
+        os.makedirs(token_dir, exist_ok=True)
+        with open(os.path.join(token_dir, "token"), "w") as f:
+            f.write(token)
+    except Exception as e:
+        st.warning(f"Token file write failed: {e}")
 
-    # 이제 init()은 파일에서 토큰을 읽어 자동 로그인
+    # 방법 2: 환경변수로도 동시에 설정
+    os.environ["TABPFN_TOKEN"] = token
+    os.environ["TABPFN_ACCESS_TOKEN"] = token
+
     tabpfn_client.init(use_server=True)
 
     X_syn, y_syn = generate_synthetic_data()

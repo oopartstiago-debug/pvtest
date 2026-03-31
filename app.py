@@ -300,6 +300,7 @@ y_impact = y_all[N_SWEEP * len(FEATURE_NAMES):]
 # ════════════════════════════════════════════════════════════════════════════
 col_g, col_p, col_i = st.columns([1, 1.4, 1.2])
 labels_full = [FEATURE_META[f][1] for f in FEATURE_NAMES]
+labels_short = [FEATURE_META[f][0] for f in FEATURE_NAMES]  # ← 이 줄 추가
 
 # ─ YI 게이지 바 ──────────────────────────────────────────────────────────
 with col_g:
@@ -334,7 +335,7 @@ with col_p:
     fig_p, ax_p = plt.subplots(figsize=(5.5, 2.8))
     fig_p.patch.set_facecolor("#f0f2f5")
     ax_p.set_facecolor("#ffffff")
-    bars = ax_p.barh(labels_full, normalized, color=bar_colors, height=0.5)
+    bars = ax_p.barh(labels_short, normalized, color=bar_colors, height=0.5)
     ax_p.axvline(0.5, color="#95a5a6", linestyle=":", lw=1.2)
     ax_p.set_xlim(0, 1.1)
     ax_p.set_title("Formulation Position in Range", fontsize=10, fontweight="bold")
@@ -355,7 +356,7 @@ with col_i:
     fig_i, ax_i = plt.subplots(figsize=(4.5, 2.8))
     fig_i.patch.set_facecolor("#f0f2f5")
     ax_i.set_facecolor("#ffffff")
-    ax_i.barh(labels_full, deltas, color=imp_colors, height=0.5)
+    ax_i.barh(labels_short, deltas, color=imp_colors, height=0.5)
     ax_i.axvline(0, color="black", lw=0.8)
     ax_i.set_title("YI Impact  (min to max)", fontsize=10, fontweight="bold")
     ax_i.set_xlabel("Delta YI", fontsize=8)

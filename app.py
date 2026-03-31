@@ -2,7 +2,6 @@
 # app.py — PVC Film Yellowing Index (YI) Prediction Dashboard
 # Streamlit + TabPFN Client (Prior Labs API)
 # ════════════════════════════════════════════════════════════════════════════
-
 import os
 import pathlib
 import warnings
@@ -16,25 +15,48 @@ import streamlit as st
 
 warnings.filterwarnings("ignore")
 
-# ── TabPFN 경로 패치 (import 전에 실행) ──────────────────────────────────
-PATCHED_PATH = pathlib.Path("/tmp/.tabpfn/token")
-os.makedirs("/tmp/.tabpfn", exist_ok=True)
+# ── TabPFN 경로 패치 ──────────────────────────────────────────────────────
+TABPFN_TMP = pathlib.Path("/tmp/.tabpfn")
+TABPFN_TMP.mkdir(parents=True, exist_ok=True)
 
 from tabpfn_client.service_wrapper import UserAuthenticationClient
 from tabpfn_client.client import ServiceClient
 import tabpfn_client
 from tabpfn_client import constants
 
-UserAuthenticationClient.CACHED_TOKEN_FILE = PATCHED_PATH
+# 토큰 파일 경로 패치
+UserAuthenticationClient.CACHED_TOKEN_FILE = TABPFN_TMP / "token"
+
+# 모든 Path 속성 일괄 패치
 for cls in [ServiceClient, UserAuthenticationClient]:
     for attr in dir(cls):
         try:
             val = getattr(cls, attr)
             if isinstance(val, pathlib.Path) and ".tabpfn" in str(val):
-                setattr(cls, attr, PATCHED_PATH.parent / val.name)
+                setattr(cls, attr, TABPFN_TMP / val.name)
         except Exception:
             pass
-constants.CACHE_DIR = PATCHED_PATH.parent
+
+# constants 패치
+constants.CACHE_DIR = TABPFN_TMP
+
+# dataset_uid_cache_manager 패치 (fit 시 캐시 저장 경로)
+try:
+    mgr = ServiceClient.dataset_uid_cache_manager
+    mgr.file_path = str(TABPFN_TMP / "dataset_uid_cache.json")
+except Exception:
+    pass
+
+# ServiceClient 내부 str 경로 속성 전체 스캔
+for attr in dir(ServiceClient):
+    try:
+        val = getattr(ServiceClient, attr)
+        if isinstance(val, str) and ".tabpfn" in val:
+            setattr(ServiceClient, attr, str(TABPFN_TMP / pathlib.Path(val).name))
+        elif hasattr(val, "file_path") and ".tabpfn" in str(getattr(val, "file_path", "")):
+            val.file_path = str(TABPFN_TMP / pathlib.Path(val.file_path).name)
+    except Exception:
+        pass
 
 # ── Page config ───────────────────────────────────────────────────────────
 st.set_page_config(
